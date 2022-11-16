@@ -167,6 +167,7 @@ terraform output (--json | --raw) NOMBRE
 
 terraform output #Devuelve todos los output generados
 terraform output direccion_ip #Devuelve unicamente la información del output seleccionado
+terraform output direccion_ip >> fichero.txt
 ```
 
 ---
@@ -188,7 +189,59 @@ Apartados interesantes del tfstate:
 En el apartado de recursos, puede consultarse la información de los recursos creados (known after apply), pero no se debe intentar obtener dicha información de esta forma, porque puede cambiar en un futuro.
 
 ---
-Ejercicio:
+VARIABLES  
+
+Una vez que tenemos nuestro main.tf, si tenemos un fichero de 500 líneas, tener que entrar a modificar este fichero y cambiar un dato concreto, es incómodo. Se crea para ello otro fichero que parametrizaremos, usando variables.
+
+Se utiliza un fichero llamado variables.tf para crear esas variables. Se podrían crear directamente en el main.tf las variables, pero las buenas prácticas lo desaconsejan totalmente.
+
+De una variable podemos definir:  
+**description** Información para saber qué define esa variable.
+**type** Fuerza el tipo que debe tener esa variable.
+**default** Un valor por defecto.  
+**nullable** True/false, especifica si se le puede asignar un valor null. NO lo pone por defecto, en ausencia de valor.
+Esta propiedad no tiene nada que ver con el valor que tiene la variable. Un dato desasignado no se asignará a null, esto sólo indica si a esa variable se le puede poner valor null. Null es un valor diferente a desasignado  
+
+Terraform NUNCA va a funcionar con una variable desasignada. O da un error o nos pide un valor en tiempo de ejecución para esa variable.
+
+Existen dos formas de suministrar el valor de una variable:
+
+-Durante la ejecución del apply, usando la flag --var nombre_variable=valor  
+NUNCA se debe hacer, salvo excepcionales casos, porque no deja huella, no permite controlar versiones, pierde automatizacion..  Pero, para claves o información confidencial, esa es mejor que la tengamos almacenada en un vault o 
+una variable protegida de Gitlab y en el momento del apply la pipeline, el jenkins, lo administre.
+
+
+```
+terraform apply --var nombre_contendor=nginx
+```  
+
+-En un fichero a parte, con extensión .tfvars. El nombre del fichero es irrelevante.
+
+```
+entorno-dev.tfvars
+
+nombre_contenedor = "nginx"  
+```
+
+Aplicamos este fichero durante la ejecución del comando apply
+
+```
+terraform apply --var-file entorno-dev.tfvars
+```
+
+Existe un tipo de fichero especial, con extensión .outo.tfvars, los valores de las variables que se definan en ese fichero se cargan por defecto, aunque serían sobreescritos por los suministrados mediante los argumentos **--var** o  **--var-file**
+Si no suministramos los valores ni a través de --var ni --var-file, terraform coge todos los ficheros con extensión .outo.tfvars y saca los valores por defecto.
+
+```
+entorno-dev.outo.tfvars
+
+nombre_contenedor = "contenedor_docker"
+
+```
+
+
+---
+EJERCICIOS:
 Aplicamos los recursos especificados de imagen y conetedor.
 ```
 docker images #Muestra listado de imágenes
@@ -248,3 +301,36 @@ resource "docker_container" "contenedor" {
 
 ```
 
+```
+#Ejemplo4: Obtener el valor de la dirección ip del contenedor generado
+# network_data es una lista de objetos, contiene ip_address, le ponemos la posición 0 para obtener el valor de ese objeto
+
+output "direccion_ip" {
+  value = docker_container.contenedor.network_data[0].ip_address
+}
+
+```
+```
+#Ejemplo5: Parametrizar valores de los recursos en un fichero de variables
+
+main.tf
+
+resource "docker_container" "contenedor" {
+    name = var.nombre_contenedor
+}
+
+
+variables.tf
+
+variable "nombre_contenedor {
+  description = "Nombre del contenedor que se va a generar"
+  type = string
+  default = "contenedor_docker"
+  nullable = true
+}
+
+
+entorno.tfvars
+
+nombre_contenedor =  "nginx"
+```
