@@ -150,6 +150,24 @@ Pero una vez ejecutado el script de terraform, terraform crará cosas, y necesit
 OUTPUTS  
 Permiten extraer información de los recursos que se han creado y trasladarsela a otros recursos o a otros programas como, por ejemplo, Ansible.
 
+Se especifican en un fichero outputs.tf  
+
+```
+output "direccion_ip" {
+  value = docker_container.contenedor.ip_address
+}
+
+#Extraemos la información a posteriori de la ip del contenedor de forma sencilla, sin necesidad de meternos en el JSON
+```
+Para saber qué información podemos extraer de cada recurso, dentro de la página del registry del recurso de ese provider, consultamos el apartado Read-only.
+
+Esta información se puede recuperar a posteriori mediante el comando **terraform output** en formato JSON
+```
+terraform output (--json | --raw) NOMBRE
+
+terraform output #Devuelve todos los output generados
+terraform output direccion_ip #Devuelve unicamente la información del output seleccionado
+```
 
 ---
 TFSTATE
@@ -167,22 +185,27 @@ Apartados interesantes del tfstate:
 }
 ```
 
+En el apartado de recursos, puede consultarse la información de los recursos creados (known after apply), pero no se debe intentar obtener dicha información de esta forma, porque puede cambiar en un futuro.
+
 ---
 Ejercicio:
 Aplicamos los recursos especificados de imagen y conetedor.
-```docker images #Muestra listado de imágenes
+```
+docker images #Muestra listado de imágenes
 docker ps #Muestra listado de contenedores
 ```
 
 Para eliminar lo que existe en el entorno:
-```terraform destroy
+```
+terraform destroy
 ```
 
 Si volvemos a ejecutar terraform apply, creará de nuevo la imagen y el contenedor. Pero si lo ejecutamos dos veces, no lo volverá a crear una segunda vez.
 Comprueba la diferencia de la infraestructura real existente y la configuración que le proporcionamos y al no encontrar diferencias, no hace nada.  
 
 Si eliminamos el contenedor con un comando de docker:
-```docker rm minginx -f
+```
+docker rm minginx -f
 ```
 
 La imagen sigue existiendo pero el contenedor ya no. Al lanzar terraform apply, detecta esa discrepancia y procede a crear de nuevo únicamente el contenedor.
