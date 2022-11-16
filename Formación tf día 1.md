@@ -1,0 +1,70 @@
+#Terraform
+
+Es una herramienta de Hashicorp que permite crear y gestionar infraestructura desde código, automatizarla
+//Vagrant permite crear y gestionar máquinas virtuales con todo lo que necesitan
+
+Terraform nos ofrece:
+-Un lenguaje declarativo, HCL (Hashicorp Language)
+-Un intérprete con el que realizar comandos sobre los ficheros que escribimos en HCL
+
+En definitiva, sirve para provisionar (adquirir, liberar, gestionar, mantener) recursos contra unos proveedores.
+Los proveedores serán habitualmente los clouds, y los recursos de tipo infraestructura.
+El principal uso de terraform es la gestión automatizada de infraestructuras en clouds. Pero no es el único uso que se le puede dar a terraform.
+
+Estaremos escribiendo programas, software
+
+#¿Qué es DevOps?
+Una filosofía, cultura, es el movimiento en pro de la automatización en todos los pasos de la construcción de un software
+
+Fases de un proyecto, ¿cuáles son automatizables?
+```
+#Plan X
+#Desarrollo X  -> Almacenan el código en GIT, SVN, Mercury...
+#Empaquetado: V
+    JAVA: Maven, gradle, sbt
+    .NET: msbuild, dotnet, nuget
+    PYTHON: poetry
+    JS: yarn, npm, webpack
+ 
+Estas herramientas nos ayudan a automatizar el trabajo, ¿quién las configura? Desarrollo
+El que sabe qué necesito para empaquetar, qué encoding necesito, lo hace desarrollo
+ 
+#Pruebas --> la definición no es automatizable, la ejecución si
+*Selenium, appium, katalon, karate, soapUi, postman, JMeter, Loadrunner...*  
+De ello se encarga testing Q&A  
+
+¿Dónde se realizan esas pruebas? En un entorno efímero.
+No lo haremos en la máquina del dev, porque son entornos que están maleados, no tenemos confianza en ellos. Lo hacemos en un entorno efímero, de usar y tirar. Para evitar que se queden valores en variables de entorno, residuos que puedan intoxicar ejecuciones posteriores. Por ello se automatiza la disposición (creación y eliminación) de ese entorno. Para ello se usan las herramientas como Vagrant, Terraform, Kubernetes  
+
+Terraform, Vagrant y Kubernetes nos permiten disponer de entornos
+Ansible, Puppet, Chef, Salt nos permiten configurar esos entornos, el aprovisionamiento de dichos entornos (configurarlos, instalarles cosas..)
+
+Esto lo ha hecho toda la vida el sys admin (es el que sabe crear una máquina, una red...) 
+
+<------------ Si conseguimos llegar hasta aquí, automatizar todo esto, tendríamos integración continua (generar un entorno de pruebas automatico, instalar en él la última versión que han realizado los desarrolladores de forma automática, y someter dicha aplicación a un montón de pruebas automatizadas)
+¿Quién llama a todos esos programas, quién orquesta esos programas? La orquestación de dichos programas la realizan los servidores de automatización CI/CD: 
+*Azure DevOps, Jenkins, TravisCI, Bamboo, TeamCity, Gitlab CI, Github Actions..*  Esto es lo que monta el DevOps
+
+
+#Liberación de una release
+<------------ Entrega Continua
+#Despliegue
+<------------ Despliegue continuo (una cosa es poner la última versión del software en manos del cliente, y otra instalársela)
+
+#Operación
+#Monitorización  
+
+ ```
+ 
+Todo entorno de producción debe tener:
+
+-Alta disponibilidad.
+  Tratar de cumplir con un objetivo de tiempo de servicio (SLA): 99%, 99,9%, 99,99%
+  
+-Escalabilidad.
+  Capacidad de ajustar la infra a las necesidades de cada momento
+  Escalabilidad vertical:
+  Escalabilidad horizontal:
+  
+  
+  
