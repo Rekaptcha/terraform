@@ -107,14 +107,65 @@ Dentro de estos recursos, sus datos específicos (ej: id, name, cpu_shares..) ap
 
 **set(bool|string|number)** *Lista de cosas, la diferencia es que no es indexable. NO se puede acceder a cada elemento en función de su posición, sólo se puede iterar*  
 
-**map(bool|string|number)** *Mapa, diccionario, array asociativo, conjunto pares clave-valor*  
+**map(bool|string|number)** *Mapa, diccionario, array asociativo, conjunto pares clave-valor*    
+
+**block list** o **block set** *Usa un nested schema, ese elemento tiene una serie de propiedades, algunas obligatorias y otras opcionales. 
+Esta propiedad NO lleva un igual, se define de forma diferente al resto de propiedades  
+```
+nombre_variable_block_list {
+  propiedad1 = valor1
+  propiedad2 = valor2
+}
+```
+
+Cuando tenemos un block set o block list, para cada bloque repetimos el elemento principal
+
+```
+ports {
+  external = 8080
+  internal = 80
+}
+ports {
+  external = 8443
+  internal = 443
+}
+```
 
 **any** *Cualquier cosa*  
 
 **object** *Mapa en el qeu hay una claves predeterminadas, no puedo meter cualquier cosa, existen una serie de claves ya predefinidas que debo usar y especificar.*  
+  
+  
+---
+#PROCESO
+Una vez definido el script de terraform, ¿quién lo ejecutará? ¿se ejecutará manualmente? NO  
+Lo ejecutará un servidor de automatización: Jenkins, Azure DevOps..   
+Una vez ejecutado, y creada la infraestructura, quizás sea necesario configurar la infra desplegada con Ansible, o ejecutar unos test...  
+
+Pero una vez ejecutado el script de terraform, terraform crará cosas, y necesitaremos información de los recursos que se han creado, datos de ellos, como la ip de la máquina, para poder lanzarle test, o su id para poder saber cuál vamos a configurar. Para ello se utilizan los outputs
 
 
+---  
 
+OUTPUTS  
+Permiten extraer información de los recursos que se han creado y trasladarsela a otros recursos o a otros programas como, por ejemplo, Ansible.
+
+
+---
+TFSTATE
+Cada vez que se realiza un apply de un fichero de configuración de infraestructura, genera un fichero .tfstate  
+Se encuentra en formato JSON, detalla todos los datos de los recursos que se han creado
+
+Apartados interesantes del tfstate:  
+```
+{
+  "version" : 4, #Número de veces que se ha ejecutado el apply
+  "terraform_version" : 1.3.4, #Versión de terraform utilizada
+  "outputs" : {},
+  "resources" : { #Listado de recursos desplegados
+  }
+}
+```
 
 ---
 Ejercicio:
@@ -150,5 +201,27 @@ resource "docker_container" "contenedor" {
 resource "docker_image" "imagen" {
   name = "nginx:latest" #imagen:tag, descarga la última imagen disponible de nginx
 }
+```
+
+```
+#Ejemplo2: Añadir dos variables de entorno, VAR1 y VAR2, con un bloque, y que cuando al host se llame al puerto 8080 del host, que se redirija al puerto 80 del contenedor; y redirigir el puerto 8443 al 443
+
+resource "docker_container" "contenedor" {
+  name = "minginx"
+  image = docker_image.imagen.image_id
+  env = [
+      "VAR1=valor1",
+      "VAR2=valor2"
+        ]
+  ports { #Esto es una block list
+      internal = 80
+      external = 8080
+  }
+  ports { #Esto es una block list
+      internal = 443
+      external = 8443
+  }
+}
+
 ```
 
