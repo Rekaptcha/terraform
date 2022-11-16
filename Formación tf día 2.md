@@ -99,7 +99,7 @@ Dentro de estos recursos, sus datos específicos (ej: id, name, cpu_shares..) ap
 
 **bool**   *Valor lógico*  
 
-**string**  *Texto*  
+**string**  *Texto, su valor se define siempre entre ""*  
 
 **number** *Número*  
 
@@ -239,6 +239,19 @@ nombre_contenedor = "contenedor_docker"
 
 ```
 
+Los ficheros .outo.tfvars los coge automáticamente, los .tfvars hay que suministrárselos.
+
+
+Para dividir el valor de un campo en varias variables, debemos posteriormente utilizar sintaxis de interpolación ${} (construir un texto a partir de unas variables) para referenciarlas y englobarlas dentro de un bloque de texto con ""
+
+```
+resource "docker_container" "contenedor" {
+    image = var."${var.repo_imagen}:$¨{var.tag_imagen}"
+}
+```
+
+
+
 
 ---
 EJERCICIOS:
@@ -333,4 +346,24 @@ variable "nombre_contenedor {
 entorno.tfvars
 
 nombre_contenedor =  "nginx"
+
+```
+
+```
+#Ejercicio: Dividir en dos variables el valor de la imagen, separando el nombre del tag
+
+main.tf
+
+resource "docker_container" "contenedor" {
+    image = var."${var.repo_imagen}:$¨{var.tag_imagen}"
+}
+
+
+variables.tf
+
+variable "repo_imagen"{
+}
+
+variable "tag_imagen"{
+}
 ```
