@@ -222,7 +222,68 @@ Entorno aislado -->  Un contenedor tiene:
 -Y puede tener limitaciones de acceso al hardware del host  
 
 Los contenedores los creamos desde una Imagen de contenedor.  
-Una imagen de contenedor es simplemente un fichero comprimido (.tar) que contiene un programa YA INSTALADO. 
+Una imagen de contenedor Es un fichero comprimido que contiene un programa YA INSTALADO y PRECONFIGURADO por alguien. Además, en ese fichero comprimido, se incluyen librerías, dependencias y comandos adicionales que puedan requerirse o ser de ayuda.  
+
+Si queremos montar SQL Server en el pc:  
+-Comprobamos los requisitos  
+-Descargamos un instalador de SQL Server   
+-Ejecutamos el instalador  
+Esto da lugar, junto con una configuración que apliquemos, da lugar a una instalación de SQL Server  
+
+Si estamos en una máquina Windows, supongamos que esa instalación acaba em--> C:/Archivos de programa/SQLServer  
+Si esta carpeta la metemos en un zip y la enviamos por email, ese zip es una imagen de contenedor.  
+Es un fichero comprimido que contiene un programa YA INSTALADO y PRECONFIGURADO por alguien. Además, en ese fichero comprimido, se incluyen librerías, dependencias y comandos adicionales que puedan requerirse o ser de ayuda.  
+ 
+Cuando descargamos una imagen de contenedor, no es como cuando descargado un instalador, sino que descargamos un programa ya instalado por alguien y con una configuración que ya ha hecho.  
 
 
+Un contenedor ejecuta su propio SO? Una imagen de contenedor lleva un SO? NO.  
+Los contenedores no ejecutan un SO propio, nunca. Solo hay 1 kernel de SO: el del host, esa es la gran diferencia a las máquinas virtuales. Por eso los contenedores tienen ventaja frente a las vm.  
+
+```
+Instalar App1 + App2 + App3
+----------------------------
+           SO
+-----------------------------
+        HARDWARE
+```
+Problemas de este tipo de instalación: Conflictos de dependencias o de configuración a nivel de SO, requerimientos diferentes, seguridad (app1 puede acceder a archivos de app2), si app1 se vuelve loca (100% CPU), app1 pasa a estar offline, pero se cae todo, app2 y app3 también.  
+
+Por eso se usaban vm en los entornos de producción. Con las vm se instala por encima del SO el hipervisor, que permite definir VM. Y ese hipervisor limitará la cantidad de recursos que puede consumir cada una del hardware real.   
+Aunque estas máquinas no son reales, a efectos sí lo son, y encima tenemos que instalar un SO, y ya encima de esta capa, la app
+
+```
+App1         |   App2 + App3
+----------------------------
+so1         |      so2
+----------------------------
+ VM1         |      VM2
+----------------------------
+HIPERVISOR: HyperV, KVM, VMware, Citrix
+----------------------------
+           SO
+-----------------------------
+        HARDWARE
+```
+
+Con ello se resuelven los problemas de conflictos, de requerimientos y de seguridad, están en máquinas distintas. Si app1 se vuelve loca y coge el 100% de la CPU sólo afecta a los recursos definidos para esa VM.  
+Problemas de trabajar con VM: desperdicio de recursos (muchos SO, licencias...), configuración compleja y más costosa de mantener, rendimiento de las apps (al tener 2 SO ya se tarda más, nunca va tan rápido como tenerlo instalado directamente sobre el SO host).  
+
+Los contenedores surgen para sovlentar esto, en lugar de un hipervisor necesitamos un gestor de contenedores: Docker.  
+
+El programa Docker tiene dos partes: cliente y servidor, el servidor es un daemon que está corriendo en el sistema. El daemon es dockerd, y el programa docker no es si no un cli que usamos para atacar a dockerd  
+
+Docker Compose simplemente es otro cli para trabajar con dockerd  
+
+```
+App1         |   App2 + App3
+----------------------------
+ VM1         |      VM2
+----------------------------
+Gestor de Contenedores: Podman, Docker, 
+----------------------------
+         SO Linux
+-----------------------------
+        HARDWARE
+```
 
