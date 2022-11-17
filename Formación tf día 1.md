@@ -278,12 +278,36 @@ Docker Compose simplemente es otro cli para trabajar con dockerd
 ```
 App1         |   App2 + App3
 ----------------------------
- VM1         |      VM2
+ C1         |      C2
 ----------------------------
-Gestor de Contenedores: Podman, Docker, 
+Gestor de Contenedores: Podman, Docker, Crio, Containerd
 ----------------------------
          SO Linux
 -----------------------------
         HARDWARE
 ```
+En entornos locales usamos Podman y Docker, en entornos de producción generalmente Clio y Containerd.  
+Podman es el que viene a día de hoy de serie con las máquinas de la familia redhat (fedora, centos..)    
+
+Los gestores de contenedores permiten crear contenedores, entornos aislados en donde crear procesos. Y en esos contenedores podemos ejecutar directamente los procesos, que estarán en comunicación directa con el kernel del SO que tenemos en el host. Resuelve prácticamente los mismos problemas que las vm (no todos, pero casi) pero sin ninguno de los problemas que tenemos con las vm.  
+
+Kubernetes y Openshift: Orquestadores de gestores de contenedores.  
+Nos sirven para controlar un cluster de gestores de contendores para su uso en un entorno de producción.  
+
+Cluster de Kubernetes:  
+Tengo 3 máquinas VM y en cada una un gestor de contenedores.  
+Hoy en día K8S admite 2 gestores de contenedores: Crio y Containerd.  
+Ya no soportan Docker.  
+
+```
+Cluster de K8S:  
+    Máquina 1:  
+        crio | containerd 
+    Máquina 2: 
+        crio | containerd 
+    Máquina 3: 
+        crio | containerd
+```
+
+K8S cuando le pida que despliegue un contenedor, contactará con el gestor de contenedores de una máquina y le pedirá a ese gestor que cree un contenedor. K8S y Openshift son orquestadores de gestores, le pedirán a unos gestores de contenedores instalados en unas vm que creen o eliminen contenedores.
 
