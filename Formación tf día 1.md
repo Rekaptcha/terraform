@@ -334,5 +334,32 @@ docker start minginx
 
 Ya tenemos un nginx funcionando en el pc.  
 Un nginx funciona por defecto en el puerto 80, para comprobar que está arrancado podemos ejecutar curl  
-curl http://80
+curl http://localhost:80
 curl localhost 
+
+http y puerto 80 son por defecto, así que se puede poner directamente el curl a localhost  
+
+El puerto 80 ahora mismo es el puerto de un servidor web apache que venía instalado en la máquina de aws, no el del contenedor. EL CONTENEDOR TIENE SU PROPIA RED Y SU PROPIA IP  
+
+``` 
+docker inspect nombre_contenedor  
+```
+
+En el apartado "IPAdress" podemos ocnsultar la ip del contendor. Si hacemos un curl a esa ip, entonces sí nos responde el nginx  
+
+Qué kernel controla el nginx? Qué SO está al cargo de los procesos del nginx? El host. 
+En Linux podemos ver los procesos corriendo de todos los usuarios con el comando ps
+```
+ps -eaf 
+```
+
+Nos aparece el proceso de nginx corriendo. Desde el host vemos sin problema los procesos del nginx. Hay 5 corriendo, en los procesos de Linux en la segunda columna se ve el ID del proceso y en la tercera el padre de ese proceso. El padre de los procesos nginx es un nginx: master process nginx, y el padre de ese proceso maestro es el contenedor. El contenedor no es sino un proceso que se ha levantado en el SO que está aislando a los otros procesos que se ejecutan como hijos de él.  
+
+A la hora de crear un contenedor le tenemos que pasar varios parámetros:  
+-Siempre le vamos a tener que pasar la imagen
+-Le podemos dar un nombre  
+-Podemos mapear un puerto al host, es decir, cuando al host le ataquen ese puerto, que redirija al puerto especificado del contendor. Así, por ejemplo, si atacan al puerto 5555 de la ip del host y lo redirecciono al contendor con nginx, responderá el nginx a esa llamada.  Eso nos ayuda a exponer un puerto de un contenedor al mundo exterior. 
+ 
+docker container create /  
+    --
+
