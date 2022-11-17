@@ -210,7 +210,19 @@ Que cree, borre o actualice los recursos existentes para que cuadren con lo que 
 
 Vamos a trabajar en los ejemplos con el proveedor Docker. Le podemos pedir que nos cree recursos: imagens, contenedores (volumenes, redes...).   
   
-#Conceptos básicos de contenedores:  
+#Conceptos básicos de contenedores:    
+Un contenedor es un entorno aislado dentro de un SO con Kernel Linux donde ejecutar procesos.  
+Se pueden ejecutar contenedores en Windows? Realmente cuando lo hacemos necesitamos levantar un subsistema Linux (una vm en nuestro SO de MAC O Windows con Linux) para que ejecute los contenedores. En MAC pasa lo mismo.  
+Los contenedores hacen uso de funcionalidades que existen en programas que se incluyen en el kernel de Linux para generar entornos aislados dentro de los cuales ejecutar procesos.  
+
+Entorno aislado -->  Un contenedor tiene:  
+-Su propia configuración de red, y por ende su propia IP(s)  
+-Sus propias variables de entorno  
+-Su propio sistema de archivos (filesystem)  
+-Y puede tener limitaciones de acceso al hardware del host  
+
+Los contenedores los creamos desde una Imagen de contenedor.  
+Una imagen de contenedor es simplemente un fichero comprimido (.tar) que contiene un programa YA INSTALADO. 
 
 
 
