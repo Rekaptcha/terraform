@@ -311,3 +311,28 @@ Cluster de K8S:
 
 K8S cuando le pida que despliegue un contenedor, contactará con el gestor de contenedores de una máquina y le pedirá a ese gestor que cree un contenedor. K8S y Openshift son orquestadores de gestores, le pedirán a unos gestores de contenedores instalados en unas vm que creen o eliminen contenedores.
 
+
+---  
+Servidor web más usado en el mundo hoy en día: nginx
+Si queremos crear un contenedor con un servidor nginx, lo primero que debemos hacer es descargar una imagen nginx  
+
+``` 
+docker image pull nginx:latest  
+```
+
+Se ha descargado el zip y lo ha descomprimido. Ahora, con esa imagen, se puede construir el contenedor. 
+
+```
+docker container create --name minginx nginx:latest  
+``` 
+
+Arrancamos el contenedor  
+
+```
+docker start minginx  
+```
+
+Ya tenemos un nginx funcionando en el pc.  
+Un nginx funciona por defecto en el puerto 80, para comprobar que está arrancado podemos ejecutar curl  
+curl http://80
+curl localhost 
