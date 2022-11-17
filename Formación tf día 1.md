@@ -66,5 +66,56 @@ Todo entorno de producción debe tener:
   Escalabilidad vertical:
   Escalabilidad horizontal:
   
-  
-  
+
+
+---
+Clouds: El conjunto de servicios (TIC) que un proveedor ofrece:
+1- A través de intenret
+2-Mediante procesos automatizados y desatendidos
+3-Con cobro por uso
+
+Los servicios pueden ser de varios tipos:
+ -Infraestructura (almacenamiento / computo) : IaaS
+ -Plataforma (bases de datos) : PaaS    
+ Yo no alquilo una maquina, alquilo directamente una base de datos, un mysql, esa base de datos tendra una infra por detras pero yo no alquilo eso, sino la bbdd, para una serie de usuarios, te alquilo la bbdd, si hay que mantener la infra, la mantiene el proveedor, si hay que actualizarla, se encarga, a mi que me de el servicio de bbdd. Se alquila no la infra, sino una serie de programas instalados encima. No son programas destinados a un usuario final, sino programas que me sirven a mi para dar la solución final que tendrá un usuario.
+ -Software  (cloud9)     SaaS 
+ Nos da un entorno, o una aplicación, que como usuario final puedo utilizar.
+ 
+ ---
+ 
+Terraform providers
+Los providers son una abstracción lógica de una API. Se encarga de entender las interacciones de API y exponer los recursos.  Los providers no son solo cloud, por ejemplo, puedes tener un proveedor de dns, terraform no solo sirve para infra, terraform permite automatizar nuestra parte del proceso de adquisición y liberación de servicios en un proveedor (aunque normalmente son servicios de infra, y normalmente en un cloud)
+
+Estamos escribiendo un programa en un lenguaje declarativo, con una sintaxis mezcla de JSON y YAML
+Es un lenguaje declarativo para la ejecución de programas (creación de scripts)
+Para la creación/mantenimiento de unos recursos en un proveedor, o eliminación de esos recursos
+
+Llamamos lenguaje a lo que usamos para programar porque tienen su gramática, su sintaxis y su semántica (Java, C, ADA..)
+Podemos usar los lenguajes de distintas formas a la hora de expresar conceptos en el mundo de la programación, a esas formas de expresarnos las llamamos paradigmas de programación:
+-Imperativo
+-Procedural
+-Funcional
+-Orientada a Objetos
+-Declarativa
+
+En el lenguaje natural tenemos tipos de sentencias también (frases): afirmativas, interrogativas, imperativas, declarativas  
+"Pon la silla debajo de la ventana" Tipo de oración: IMPERATIVA : ORDEN
+Habitualmente, cuando montamos scripts, usamos lenguaje imperativo  
+Bash, PowerShell (PS1), Python..
+Estructuras/vocablos tipicos de lenguaje imperativo: IF, ELSE, FOR, WHILE...  
+
+"La silla debe estar debajo de la ventana" Tipo de oración: DESIDERATIVA/DECLARATIVA
+Da igual el estado de lque partamos en un momento dado, al ejecutar el script siempre debe quedar en el mismo estado.
+
+Herramientas que usan lenguaje declarativo:
+-Terraform
+-Ansible
+-Kubernetes
+-Openshift
+
+Al final en un fichero HCL vamos a declarar recursos que queremos en un proveedor.
+Declararemos infraestructura a crear en un cloud, en un fichero de código: Infraestructura como código.  
+
+
+
+ 
