@@ -355,11 +355,57 @@ ps -eaf
 
 Nos aparece el proceso de nginx corriendo. Desde el host vemos sin problema los procesos del nginx. Hay 5 corriendo, en los procesos de Linux en la segunda columna se ve el ID del proceso y en la tercera el padre de ese proceso. El padre de los procesos nginx es un nginx: master process nginx, y el padre de ese proceso maestro es el contenedor. El contenedor no es sino un proceso que se ha levantado en el SO que está aislando a los otros procesos que se ejecutan como hijos de él.  
 
+---
 A la hora de crear un contenedor le tenemos que pasar varios parámetros:  
 -Siempre le vamos a tener que pasar la imagen
 -Le podemos dar un nombre  
--Podemos mapear un puerto al host, es decir, cuando al host le ataquen ese puerto, que redirija al puerto especificado del contendor. Así, por ejemplo, si atacan al puerto 5555 de la ip del host y lo redirecciono al contendor con nginx, responderá el nginx a esa llamada.  Eso nos ayuda a exponer un puerto de un contenedor al mundo exterior. 
+-Podemos mapear un puerto al host, es decir, cuando al host le ataquen ese puerto, que redirija al puerto especificado del contendor. Así, por ejemplo, si atacan al puerto 5555 de la ip del host y lo redirecciono al contendor con nginx, responderá el nginx a esa llamada.   
  
-docker container create /  
-    --
+ ```
 
+docker container create \
+    --name minginx \
+    -p 172.31.20.70:8080:80 \    # iphost:puertohost:puertocontenedor  --> Aquí especificamos que cuando llegue al host una petición al puerto 8080 lo redirija al puerto 80 del contenedor, nos ayuda a exponer un contenedor al mundo exterior.
+    -e VAR1=valor1  #Variables de entorno para proporcionar o sobreescribir la configuración del contenedor, para cada 1 se añade un -e
+
+docker container create \
+    --name minginx \
+    -p 172.31.20.70:8080:80 \   
+    -e VARIABLE1=valor1 \
+    -e VARAIBLE2=valor2 \
+    
+```
+
+Si en el apartado del puerto ponemos  -p 0.0.0.0:8080:80 --> significa que una petición a cualquier ip del host (no solo la de internet, sino la loopback también por ejemplo) que vaya al puerto 8080 se redirija al puerto 80 del contendor.   Es lo mismo que poner directamente los puertos 8080:80  
+
+```
+docker container create \
+    --name minginx \
+    -p 8080:80 \    # iphost:puertohost:puertocontenedor  --> Aquí especificamos que cuando llegue al host una petición al puerto 8080 lo redirija al puerto 80 del contenedor, nos ayuda a exponer un contenedor al mundo exterior.
+```
+
+Con -v especificamos un volumen a nivel de docker es una carpeta del host que comparto en el contendor, en un punto del montaje. Esa carpeta se está compartiendo en tiempo real. 
+
+```
+-v ruta_host:ruta_contenedor   
+
+docker container create \
+    --name minginx \
+    -p 172.31.20.70:8080:80 \   
+    -e VARIABLE1=valor1 \
+    -e VARAIBLE2=valor2 \
+    -v /home/ubuntu/environment/curso:/datos   
+    
+#Estamos cogiendo la carpeta de esa ruta y la compartimos en el contenedor en la ruta /datos.  
+
+```
+Un contenedor es un lugar en el que ejecutar procesos, ¿podemos ejecutar los procesos que nos de la gana en un contenedor? Con docker exec podemos ejecutar procesos adicionales en un contenedor
+
+```
+docker exec nombre_contenedor comando
+
+docker exec minginx ls \ 
+
+docker exec minginx env  #Comando para ver las vv de entorno en linux
+```
+Las variables de entorno del contenedor son independientes a las vv de entorno del host 
