@@ -185,3 +185,32 @@ Cada proveeddor tendrá sus propios parámetros configurables. Esto ya no es ter
 
 Cada recurso de cada proveedor tiene sus propias propiedades configurables, se debe consultar siempre la documentación disponible del registry.  
 
+Al final en un fichero HCL lo que voy a hacer es declarar los recursos que quiero en un proveedor.
+Si declaro infraestructura a crear, en un fichero de código: Infraestructura como código.  
+
+---
+
+Un script de terraform es un conjunto de archivos con extensión: .tf  
+El nombre de los archivos da igual. Un script de terraform son muchos ficheros que tienen la extensión .tf, da igual como se llamen. Esos archivos estarán en una carpeta, separada para ese script: cada script tiene su propia carpeta en terraform, no puedo tener dos scripts diferentes en una misma carpeta.  
+De esa carpeta, terraform coge TODOS los archivos con extensión .tf y los une en uno solo que es el que ejecuta. Podemos tener las cosas separadas en todos los ficheros .tf que queramos, y cuando ejecutemos terraform todos los ficheros .tf de esa carpeta en la que lanzamos el comando se juntarán. Da igual el orden, terraform es insensible al orden.  
+
+A un script de terraform le podemos pedir varias cosas:  
+-Que se inicialice:   $ terraform init  
+Descargamos todso los proveedores en local que se van a usar  
+-Que se valide: $terraform validate  
+Que terraform valide la sintaxis
+-Que haga un plan: $ terraform plan 
+qué tareas son necesarias llevar a cabo para conseguir los recursos/infra que están ahí declarados  
+-Que aplique un plan: $ terraform apply    
+Que cree, borre o actualice los recursos existentes para que cuadren con lo que tenemos establecidos en el fichero
+-Que elimine todos los recursos: $ terraform destroy   
+
+
+---
+
+Vamos a trabajar en los ejemplos con el proveedor Docker. Le podemos pedir que nos cree recursos: imagens, contenedores (volumenes, redes...).   
+  
+#Conceptos básicos de contenedores:  
+
+
+
