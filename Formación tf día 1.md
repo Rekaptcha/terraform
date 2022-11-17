@@ -116,6 +116,72 @@ Herramientas que usan lenguaje declarativo:
 Al final en un fichero HCL vamos a declarar recursos que queremos en un proveedor.
 Declararemos infraestructura a crear en un cloud, en un fichero de código: Infraestructura como código.  
 
+En los ficheros HCL, haremos uso intesivo de:
+=
+{}
+8 palabras: terraform, provider, variable, output, resource, data, provisioner, module  
 
 
- 
+#Ejemplo. Queremos un servidor con 16GBs de RAM y 4cpuS, 2tb de HDD, pinchado en una red conectado a Internet  
+Si primero lo queremos para AWS y luego para Azure, habrá que reescribirlo entero, no será ni parecido.    
+
+Ventajas de Terraform:  
+-Necesito aprender 1 unica sintaxis  
+-Usa un lenguaje declarativo  
+-Cada proveedor de terraform tiene su documentación, y un listado de todos los servicios disponibles en ese proveedor
+
+AWS tiene su propia herramienta cliente para automatizar trabajos en AWS, para desplegar su infraestructura -> aws cli  
+Utiliza lenguaje imperativo.
+
+
+---
+Un fichero HCL siempre lleva una marca: terraform  
+```
+terraform {
+    #Establezco la configuración de terraform: la versión requerida de terraform y los providers que son necesarios
+    #Para ello se utiliza el bloque required_providers
+    required_providers {
+        nombre_proveedor = {
+            source = "repositorio" #De este repositorio se descargará el programa del proveedor
+            }
+}   
+```
+```
+terraform {
+    required_providers {
+        aws = {
+            source = "hashicorp/aws"
+            }
+            
+ }
+```
+Cuando instalamos terraform no viene por defecto con todos los proveedores, los tenemos que instalar.  
+Cualquier provider que queramos usar lo vamos a tener que instalar, vamos a tener que especificar los providers que son necesarios.  
+
+Para consultar cómo instalarlo (el bloque de código especificado más arriba) accedemos al registry de terraform y dentro del apartado del proveedor "How to use this provider" viene el ejemplo que podemos copiar y usar  
+
+Cada proveedor lleva su configuración específica, que se establece en un bloque externo llamado provider  
+
+```
+provider "nombre_proveedor" {
+    propConfiguracion1 = valor1
+}
+```
+
+Cuando escribimos un script de terraform, ese script será procesado por terraform, quien le enviará instrucciones a un provider. Un provider es un programa desarrollado para terraform que permite comunicar con un proveedor. En caso de amazon ese programa habla con aws cli, que será quien hable con aws  
+
+script terraform -> terraform -> provider -> aws cli -> aws  
+
+La información de credenciales se puede pasar en la configuración, pero es una mala práctica, se pasa en el punto del aws cli
+
+```
+Ejemplo de configuración de provider  
+
+provider "aws" {
+    region = "us-east-1"
+}
+```
+Cada proveeddor tendrá sus propios parámetros configurables. Esto ya no es terraform, esto está fuera del bloque de terraform, esto es algo del proveedor.  
+
+Cada recurso de cada proveedor tiene sus propias propiedades configurables, se debe consultar siempre la documentación disponible del registry.  
+
