@@ -640,7 +640,17 @@ variables_de_entorno = {
 #De esta forma le pedimos una lista donde para cada objeto que queremos que introduzca, tenga que aportar la clave y el valor. Aquí no hay dudas ni ambiguedades
 ```
 
+Problema: env espera un set de strings (set(string)), pero tenemos un set de objetos (set(object)). 
+Podemos usar los bucles en línea. 
+
 
 ```
+
+main.tf 
+
+env = [ for variable in var.variables_entorno: "${variable.clave}=${variable.valor}" ]
+
+#Iteramos en cada elemento de ese set, convirtiendo el resultado en una lista nueva.
+Para cada uno de los elementos que tengo en la lista de las variables de entorno voy a generar este valor "${variable.clave}=...", con todos esos valores compongo otra lista que es la que enchufo a env
 
 ```
