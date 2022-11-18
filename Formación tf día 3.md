@@ -37,21 +37,88 @@ variable "cuota_cpu" {
 
 ```
 
-Podemos solicitar a docker una redirección de puertos 
+#PUERTOS 
+
+Cuando creamos un contenedor,  podemos solicitar a docker una redirección de puertos 
 
 ```
 docker container create \
     -p ip-host:puerto-host:puerto-contenedor \
     imagen
-        
-        ip_host: 0.0.0.0    Mascara de red: TODAS LAS IPS
+               
 ```   
-IPS de mi host
+
+Mi host tiene varias IPs, concretamente: 
     - Red de amazon:         172.31.20.70
     - Red de loopback:       127.0.0.1 (localhost)
     - Red virtual de docker: 172.17.0.1
+
+
+Si hacemos un ifconfig, en windows un ipconfig:
+En el interfaz de loopback, tenemos en el apartado inet la dirección ip de loopback
+En el interfaz de ens, tenemos en el apartado inet la dirección de ethernet (la de amazon) 
+En el interfaz de docker, tenemos en el apartado inet la dirección de la red de docker
+
+Si tuviesemos wifi tendríamos otra ip en este listado. Podemos no querer abrir el puerto en todas las ips, quizás solo en las internas. Eso se puede establecer en el -p
+
+Se podría poner una de las IPS disponibles, pero también se puede poner una máscara
+ ip_host: 0.0.0.0    Mascara de red: TODAS LAS IPS
+
+En caso de poner esta máscara, esto es como poner todas las ips, porque todas las ips cumplen con esa máscara, en todas ellas se abriría el puerto para hacer la redirección al puento del contenedor.  
+
+
+```
+Ejercicio. Establecer la variable puertos_a_exponer, que la ip sea opcional, y si no nos dan la ip, ponemos por defecto el valor 0.0.0.0
+
+variables.tf
+---
+variable "puertos_a_exponer" {
+    description = "Puertos a exponer para el contenedor"
+    type        = list(object({
+                    interno = number
+                    externo = number
+                    ip      = optional(string, "0.0.0.0")
+                  }))
+    nullable    = false # true
+                       # Indica si se le puede asignar un valor null
+                       # Si no le pongo valor, se considera que tiene valor null? NOMBRE
+                       # No es lo mismo una variable desasignada que asignada a null
+
+
+main.tf 
+---
+
+resource "docker_container" "contenedor" {
+    name        = var.nombre_contenedor
+    image       = docker_image.imagen.image_id
+                  # Variable          # Propiedad de esa variable
+    #start       = false
     
-    
+    cpu_shares  = var.cuota_cpu # Le dejo usar el equivalente a un core.
+                  # Y si no quiero limitarle la cpu ? 
+    # Cuando en terraform, a una propiedad de un recurso le asignamos valor null
+    # Es como si no hubiera escrito la propiedad
+                  
+    # Espera un set(string)
+    env         = [ for variable in var.variables_entorno: "${variable.clave}=${variable.valor}" ]
+                    # bucles en linea de python
+    # Atención: DYNAMIC SOLO SIRVE PARA BLOQUES DINAMICOS.
+    # Más adelante habrá otras cosas que queramos montar en bucle
+    dynamic "ports"{
+        for_each = var.puertos_a_exponer
+                   # Un for_each en un dynamic recibe una lista
+        iterator = puerto
+        content {
+                    internal = puerto.value["interno"]
+                    external = puerto.value["externo"]
+                    ip       = puerto.value["ip"]
+                }
+    }
+    # Quiero también el puerto 8443 -> 443
+}
+
+```
+
 # REGEX
 
 Lo que hacemos es definir una REGEX: EXPRESION REGULAR.
