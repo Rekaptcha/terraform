@@ -107,7 +107,11 @@ Dentro de estos recursos, sus datos específicos (ej: id, name, cpu_shares..) ap
 
 **set(bool|string|number)** *Lista de cosas, la diferencia es que no es indexable. NO se puede acceder a cada elemento en función de su posición, sólo se puede iterar*  
 
-**map(bool|string|number)** *Mapa, diccionario, array asociativo, conjunto pares clave-valor*    
+**map(bool|string|number)** *Mapa, diccionario, array asociativo, conjunto pares clave-valor*   
+
+**any** *Cualquier cosa*  
+
+**object** *Mapa en el qeu hay una claves predeterminadas, no puedo meter cualquier cosa, existen una serie de claves ya predefinidas que debo usar y especificar.*  
 
 **block list** o **block set** *Usa un nested schema, ese elemento tiene una serie de propiedades, algunas obligatorias y otras opcionales. 
 Esta propiedad NO lleva un igual, se define de forma diferente al resto de propiedades  
@@ -131,11 +135,30 @@ ports {
 }
 ```
 
-**any** *Cualquier cosa*  
+  
+Un tipo object es como un mapa pero que tiene unas claves predefinidas
 
-**object** *Mapa en el qeu hay una claves predeterminadas, no puedo meter cualquier cosa, existen una serie de claves ya predefinidas que debo usar y especificar.*  
-  
-  
+```
+
+variables.tf
+variable "puerto_http" {
+  description = "Puertos a exponer para el contenedor"
+  type = object({
+      interno = number
+      externo = number
+  })
+}
+
+---
+
+main.tf 
+
+ports  {
+      internal = var.puerto_http.interno
+      external = var.puerto_http.externo
+}
+
+```
 ---
 #PROCESO
 Una vez definido el script de terraform, ¿quién lo ejecutará? ¿se ejecutará manualmente? NO  
@@ -362,8 +385,97 @@ resource "docker_container" "contenedor" {
 variables.tf
 
 variable "repo_imagen"{
+  description = "Nombre del repositorio de la imagen"
+  type = string
+  nullable = false
 }
 
 variable "tag_imagen"{
+  description = "Nombre del tag de la imagen"
+  type = string
+  nullable = false
 }
 ```
+
+
+```
+Ejercicio. Definir el valor de los puertos externo e interno. ¿Cómo podemos meter el valor?
+
+puerto_http = [ 80 , 8080]  #Usaremos una lista porque un set no es iterable
+
+main.tf 
+
+ports {
+  external = var.puerto_http[0]
+  internal = var.puerto_http[1]
+}
+
+
+variables.tf
+
+variable "puerto_http" {
+  description = "Puertos a exponer para el contenedor"
+  type = list(number)
+}
+
+
+entorno.tfvars
+
+puerto_http = [ 5443, 443 ]
+
+#No es una buena solución porque no es explícito cuál es el valor del puerto externo e interno para otra persona que pueda tener que rellenar esta infromación
+```
+
+```
+Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (Tampoco buena)
+
+main.tf 
+
+ports {
+  external = var.puerto_http.interno
+  internal = var.puerto_http.externo
+}
+
+
+variables.tf
+
+variable "puerto_http" {
+  description = "Puertos a exponer para el contenedor"
+  type = map(number)
+}
+
+
+entorno.tfvars
+
+puerto_http = {
+                  "interno" = 80
+                  "externo" =  8080
+}
+
+#Esta opción es mejor pero no tan buena, recurriendo a un par clave-valor en el que definamos cual es cual. Es más explícita y dará lugar a menos errores, pero no tengo control sobre las claves que se usarán, puesto que sólo se definen en el apartado de .tfvars, podrían poner esto y funcionaría igual (?? revisar esto, porque en el variables.tf se especifica el nombre de la clave...):
+
+puerto_http = {
+                  "federico" = 80
+                  "externo" =  8080
+}
+
+```
+
+
+```
+Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (Tampoco buena)
+Trabajar con un tipo object  
+
+main.tf 
+
+ports {
+  external = var.puerto_http.interno
+  internal = var.puerto_http.externo
+}
+
+variable "puerto_http" {
+  description = "Puertos a exponer para el contenedor"
+  type = object({
+  
+  })
+}
