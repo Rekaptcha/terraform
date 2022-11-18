@@ -259,3 +259,28 @@ module "claves_prueba" {
 
 
 1h....
+
+
+---
+
+OJO!
+
+Propiedades en Terraform: 
+
+Si llevan un =  pueden ser un map o un object
+Si no llevan un =  es un bloque
+
+tags = {
+      name = "HelloWorld"
+ } #Map u object
+ 
+ tags  {
+      name = "HelloWorld"
+ } #Bloque
+ 
+
+--- 
+
+AWS  
+
+
