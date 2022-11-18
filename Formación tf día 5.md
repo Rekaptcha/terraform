@@ -278,9 +278,56 @@ tags = {
       name = "HelloWorld"
  } #Bloque
  
-
+```
 --- 
 
 AWS  
 
+La palabra clave data realiza una búsqueda en el proveedor y nos devuelve información.
+En la información del provider, además de los recursos disponibles, tenemos información de los datasources.
 
+Por ejemplo.
+
+El datasource aws_ami permite obtener el id de un ami  
+Esa busqueda que se realizaba dentro de amazon, se realiza dentro de terraform. Terraform realiza una búsqueda de imágenes y selecciona la última que haya que cumpla con los filtros establecidos. 
+
+
+
+Primero irá a crear el recurso de la máquina, y fallará. Es importante tener control del orden de ejecución, osea, hay que crear una relación de dependencia entre los recursos --> por eso en el bloque resource, en lugar de referenciar el nombre de otro recurso tal que "nombre_recurso", hacemos la referencia tal que --> tipo_recurso.nombre_recurso.valor 
+Esto nos permite garantizar el orden
+
+
+```
+resource "aws_instance" "mi_maquina"{
+    ami             = "ami-0a5d9cd4e632d99c1"
+    instance_type   = "t2.micro
+    key_name        = aws_key_pair.claves_en_amazon.id #Nunca pondremos aquí "ClavePublicaRaquel"
+                                                       #Es importante garantizar el orden...
+}
+
+
+resource "aws_key_pair" "claves_amazon" {
+    key_name = "ClavePublicaRaquel"
+    public_key =m module.mis_claves.publicKey.open_ssh #Generamos nuestra clave pública OPENSSH
+}
+
+
+module "mis_claves" {
+  source = "../modulo_claves_tls"
+  algoritmo = {
+               nombre = "RSA"
+               configuracion = "4096"
+               }
+  force_recreate = false
+  file_destination = "clavesRaquel"
+               
+}
+
+```
+
+--- 
+
+
+```
+sss
+```
