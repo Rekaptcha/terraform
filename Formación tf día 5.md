@@ -253,6 +253,7 @@ terraform {
 
 module "claves_prueba" {
       modulo_claves_tls = {
+                            sorce         = "../modulo_claves_tls"
                             nombre        = "RSA"
                             configuracion = "2048"
 
