@@ -290,6 +290,69 @@ resource "docker_container" "contenedor" {
 
 
 
+--- 
+
+RESTRICCIONES
+
+Podríamos poner cualquier valor a las variables y mientras fuese del tipo correcto (por ejemplo, en puerto, un valor negativo -443, o una cuota de cpu de 0), lo aceptaría. Una práctica correcta y deseable es añadir restricciones, validaciones, en la definición de las variables.    
+Siempre se deberían añadir validaciones
+
+Dicha validación se componen de una "condition", que es una expresión lógica, que si es true, indica que el valor será adecuado, y un "error_message" que se mostrará cuando el valor no cumpla con lo expuesto en la expresión lógica 
+
+```
+variable "cuota_cpu" {
+  description = "Cuota de CPU para el contenedor"
+  type = number
+  nullable = false
+  
+  validation {
+    condition = var.cuota_cpu > 0 #Expresión lógica a evaluar
+    error_message = "El valor de cuota cpu no puede ser inferior o igual a 0"
+  }
+
+} 
+
+```
+
+Se pueden concatenar dos validaciones o ponerlas seguidas
+En el apartado validation sólo se puede hacer referencia a la variable dentro de la que se enceutnra, si ponemos por ejemplo condition = var.tag_imagen dentro de cuota_cpu, fallará.   
+
+
+```
+variable "cuota_cpu" {
+  description = "Cuota de CPU para el contenedor"
+  type = number
+  nullable = false
+  
+  validation {
+    condition = var.cuota_cpu > 0 #Expresión lógica a evaluar
+    error_message = "El valor de cuota cpu no puede ser inferior o igual a 0"
+  }
+
+  validation {
+    condition = var.cuota_cpu <=2048  #Expresión lógica a evaluar
+    error_message = "El valor de cuota cpu no puede superar los 2048"
+  }
+
+} 
+
+#Alternativamente:  
+
+variable "cuota_cpu" {
+  description = "Cuota de CPU para el contenedor"
+  type = number
+  nullable = false
+  
+  validation {
+    condition = var.cuota_cpu > 0 && var.cuota_cpu <=2048 #Expresión lógica a evaluar
+    error_message = "El valor de cuota cpu no puede ser inferior o igual a 0 ni superior a 2048"
+  }
+}
+
+```
+
+
+
 
 ---
 EJERCICIOS:
@@ -652,5 +715,39 @@ env = [ for variable in var.variables_entorno: "${variable.clave}=${variable.val
 
 #Iteramos en cada elemento de ese set, convirtiendo el resultado en una lista nueva.
 Para cada uno de los elementos que tengo en la lista de las variables de entorno voy a generar este valor "${variable.clave}=...", con todos esos valores compongo otra lista que es la que enchufo a env
+
+```
+
+
+```
+Ejercicio: Añadir validación para los puertos.  
+
+
+variable "puertos_a_exponer" {
+  description = "Puertos a exponer para el contenedor"
+  type = list(object({
+      interno = number
+      externo = number
+  }))
+  nullable = false
+  
+  validation {
+    condition = alltrue(
+                          [ for puerto in var.puertos_a_exponer: puerto.interno < 6500 ] #list(bool)
+                          
+                       ) 
+    #La validación estaría bien cuando todos estos booleanos sean true, recurrimos a una función built-in de terraform
+    error_message = "El puerto interno debe ser menor a 6500"
+  }
+  validation {
+    condition = alltrue(
+                          [ for puerto in var.puertos_a_exponer: puerto.externo < 6500 ] #list(bool)
+                          
+                       ) 
+    #La validación estaría bien cuando todos estos booleanos sean true, recurrimos a una función built-in de terraform
+    error_message = "El puerto externo debe ser menor a 6500"
+  }
+}
+
 
 ```
