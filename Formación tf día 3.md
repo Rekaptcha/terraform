@@ -118,15 +118,15 @@ resource "docker_container" "contenedor" {
 }
 
 ```
+--- 
 
-# REGEX
+# REGEX o EXPRESIONES REGULARES
 
 Lo que hacemos es definir una REGEX: EXPRESION REGULAR.
-Qué es una expresión regular?
-    Es una secuencia(conjunto) de patrones
-    Qué es un patrón? 
-        Es un conjunto de caracteres seguidos de un modificador de cantidad
-    
+Qué es una expresión regular? Es una secuencia(conjunto) de patrones
+Qué es un patrón? Es un conjunto de caracteres seguidos de un modificador de cantidad
+
+```
     conjunto de caracteres. Ejemplos:     Interpretación                    Texto           Encuentro el patrón en el texto?
         hola                                literalmente                    hola amigos !       SI (1)
                                                                             ^^^^
@@ -138,7 +138,7 @@ Qué es una expresión regular?
         [a-z]                               algun caracter entre la a y la z
         [A-Za-záñü]
         [0-9]                               Un caracter entre el 0 y el 9
-        [1-37]                              Un caracter entre el 1  el 3 
+        [1-37]                              Un caracter entre el 1 y el 3 
                                             y el caracter 7
         [a-z-]                              Los caracteres de la a, a la z y el guión
         .                                   Cualquier caracter
@@ -161,6 +161,10 @@ Qué es una expresión regular?
         |       O
         ()      Agrupan
         
+```
+
+```
+EJEMPLOS.  
 
 Quiero un patrón para los números del 0 al 19
 
@@ -179,15 +183,21 @@ Nombre de una persona, incluyendo nombres compuestos.
     
     [A-Z][a-z]{2,}( (([a-z]{1,3} ){0,2}[A-Z][a-z]{2,}))*
 
-regex101
+```
 
-En Terraform usamos INTENSIVAMENTE expresiones regulares,
-ya que tenemos muchas variables de texto que validar.
+Para consultar regex o hacer pruebas:  regex101
 
-Por suerte, seguramente no somos la primera persona en el mundo en necesitar
-un determinado patrón.
+En Terraform usamos INTENSIVAMENTE expresiones regulares, ya que tenemos muchas variables de texto que validar.
+
+Por suerte, seguramente no somos la primera persona en el mundo en necesitar un determinado patrón.
 Y google será vuestra salvación.
+
+```
+Patrón para validar una IP, incluyendo máscaras: 
+
 IP.   ^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)$
+
+```
 
 
 # Quiero un output, con las ips de los contenedores
