@@ -159,6 +159,21 @@ ports  {
 }
 
 ```
+
+Podemos generar bucles con dynamic, pero sólo para elementos dinámicos. Esto es algo específico para los bloques. 
+Si queremos generar bucles para otros elementos diferentes a los bloques, tendremos otras alternativas distintas para iterar
+
+```
+dynamic "ports" {
+        for_each = var.puertos_a_exponer
+        iterator = puerto #nombre de variable que podemos usar para referirme a cada uno de los objetos que tenga dentro de la lista *
+        content {
+                  internal = puerto.value["interno"] #*
+                  external = puerto.value["externo"] #*
+                }
+}
+```
+
 ---
 #PROCESO
 Una vez definido el script de terraform, ¿quién lo ejecutará? ¿se ejecutará manualmente? NO  
@@ -463,19 +478,169 @@ puerto_http = {
 
 
 ```
-Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (Tampoco buena)
-Trabajar con un tipo object  
+Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (mejor, pero aún no es la idónea)
 
 main.tf 
 
-ports {
-  external = var.puerto_http.interno
-  internal = var.puerto_http.externo
+ports  {
+      internal = var.puerto_http.interno
+      external = var.puerto_http.externo
 }
 
+Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (Tampoco buena)
+Trabajar con un tipo object  
+
+variables.tf
 variable "puerto_http" {
   description = "Puertos a exponer para el contenedor"
   type = object({
-  
+      interno = number
+      externo = number
   })
 }
+
+---
+
+#Aquí si tenemos control de los datos, del nombre de las claves, pero, ¿y si ahora queremos abrir más puertos? Deberemos crear una lista de objetos
+```
+
+```
+Ejercicio. Definir el valor de los puertos externo e interno: SOLUCIÓN IDÓNEA --> lista de objetos
+
+variables.tf
+variable "puertos_a_exponer" {
+  description = "Puertos a exponer para el contenedor"
+  type = list(object({
+      interno = number
+      externo = number
+  }))
+}
+
+
+entorno.tfvars
+
+puertos_a_exponer = [
+                    { 
+                     "interno" = 80
+                     "externo" = 8080
+                    },
+                    {
+                     "interno" = 80
+                     "externo" = 8080
+                    }
+                    ]
+                    
+#Tenemos así una lista que tiene dentro dos objetos, cada uno con su valor para el puerto interno y externo 
+
+#Para implementar esto debemos hacer uso de un bucle. Eso en terraform se implementa con un bloque dinámico, dynamic. Este bloque dinámico tiene un contenido. Y ese bloque dinámico queremos uno para cada objeto que tenga dentro de la lista "puertos_a_exponer"
+
+
+dynamic "ports" {
+        for_each = var.puertos_a_exponer
+        iterator = puerto #nombre de variable que podemos usar para referirme a cada uno de los objetos que tenga dentro de la lista *
+        content {
+                  internal = puerto.value["interno"] #*
+                  external = puerto.value["externo"] #*
+                }
+}
+
+#Para cada elemento que tenga dentro de la lista "puertos_a_exponer", quiero generar un puerto
+
+```
+
+
+```
+Ejercicio. Definir el valor de las variables de entorno
+#Se trata de una lista o, más concretamente, un set de strings  
+
+
+main.tf 
+
+env = var.variables_entorno
+
+
+
+variables.tf 
+
+variable "variables_entorno" {
+    description = "Variables de entorno del contenedor"
+    type = set(string)
+    nullable = false
+}
+
+
+
+entorno.tfvars
+
+variables_de_entorno = [
+                        "VAR1=valor1",
+                        "VAR2=valor2"
+                        ]
+                        
+                        
+#De nuevo, esta sintais no es explícita, cómo sabe quien lo tiene que rellenar que no puede poner "valor1=VAR1" o "var1,valor1"
+
+``` 
+
+```
+Ejercicio. Definir el valor de las variables de entorno: BUENA SOLUCIÓN
+#Realizar un map de strings
+
+
+main.tf 
+
+env = var.variables_entorno
+
+
+variable "variables_entorno" {
+    description = "Variables de entorno del contenedor"
+    type = map(string)
+    nullable = false
+}
+
+
+entorno.tfvars
+
+variables_de_entorno = {
+                        "VAR1" = "valor1",
+                        "VAR2" = "valor2"
+                        }
+#Pero aquí no estamos dejando claro si va primero la clave o el valor, es una solución mejor, pero mala de todas formas  
+
+``` 
+
+```
+Ejercicio. Definir el valor de las variables de entorno: BUENA SOLUCIÓN
+#Realizar un map de strings
+
+
+main.tf 
+
+env = var.variables_entorno
+
+
+variable "variables_entorno" {
+    description = "Variables de entorno del contenedor"
+    type = set(object({
+                      clave = string
+                      valor = string
+                      }))
+    nullable = false
+}
+
+
+entorno.tfvars
+
+variables_de_entorno = {
+                        "clave" = "VAR1",
+                        "valor" = "valor1"
+                        }  
+                        
+                        
+#De esta forma le pedimos una lista donde para cada objeto que queremos que introduzca, tenga que aportar la clave y el valor. Aquí no hay dudas ni ambiguedades
+```
+
+
+```
+
+```
