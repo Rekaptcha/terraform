@@ -107,11 +107,7 @@ Dentro de estos recursos, sus datos específicos (ej: id, name, cpu_shares..) ap
 
 **set(bool|string|number)** *Lista de cosas, la diferencia es que no es indexable. NO se puede acceder a cada elemento en función de su posición, sólo se puede iterar*  
 
-**map(bool|string|number)** *Mapa, diccionario, array asociativo, conjunto pares clave-valor*   
-
-**any** *Cualquier cosa*  
-
-**object** *Mapa en el qeu hay una claves predeterminadas, no puedo meter cualquier cosa, existen una serie de claves ya predefinidas que debo usar y especificar.*  
+**map(bool|string|number)** *Mapa, diccionario, array asociativo, conjunto pares clave-valor*    
 
 **block list** o **block set** *Usa un nested schema, ese elemento tiene una serie de propiedades, algunas obligatorias y otras opcionales. 
 Esta propiedad NO lleva un igual, se define de forma diferente al resto de propiedades  
@@ -135,44 +131,11 @@ ports {
 }
 ```
 
+**any** *Cualquier cosa*  
+
+**object** *Mapa en el qeu hay una claves predeterminadas, no puedo meter cualquier cosa, existen una serie de claves ya predefinidas que debo usar y especificar.*  
   
-Un tipo object es como un mapa pero que tiene unas claves predefinidas
 
-```
-
-variables.tf
-variable "puerto_http" {
-  description = "Puertos a exponer para el contenedor"
-  type = object({
-      interno = number
-      externo = number
-  })
-}
-
----
-
-main.tf 
-
-ports  {
-      internal = var.puerto_http.interno
-      external = var.puerto_http.externo
-}
-
-```
-
-Podemos generar bucles con dynamic, pero sólo para elementos dinámicos. Esto es algo específico para los bloques. 
-Si queremos generar bucles para otros elementos diferentes a los bloques, tendremos otras alternativas distintas para iterar
-
-```
-dynamic "ports" {
-        for_each = var.puertos_a_exponer
-        iterator = puerto #nombre de variable que podemos usar para referirme a cada uno de los objetos que tenga dentro de la lista *
-        content {
-                  internal = puerto.value["interno"] #*
-                  external = puerto.value["externo"] #*
-                }
-}
-```
 
 ---
 #PROCESO
@@ -290,69 +253,6 @@ resource "docker_container" "contenedor" {
 
 
 
---- 
-
-RESTRICCIONES
-
-Podríamos poner cualquier valor a las variables y mientras fuese del tipo correcto (por ejemplo, en puerto, un valor negativo -443, o una cuota de cpu de 0), lo aceptaría. Una práctica correcta y deseable es añadir restricciones, validaciones, en la definición de las variables.    
-Siempre se deberían añadir validaciones
-
-Dicha validación se componen de una "condition", que es una expresión lógica, que si es true, indica que el valor será adecuado, y un "error_message" que se mostrará cuando el valor no cumpla con lo expuesto en la expresión lógica 
-
-```
-variable "cuota_cpu" {
-  description = "Cuota de CPU para el contenedor"
-  type = number
-  nullable = false
-  
-  validation {
-    condition = var.cuota_cpu > 0 #Expresión lógica a evaluar
-    error_message = "El valor de cuota cpu no puede ser inferior o igual a 0"
-  }
-
-} 
-
-```
-
-Se pueden concatenar dos validaciones o ponerlas seguidas
-En el apartado validation sólo se puede hacer referencia a la variable dentro de la que se enceutnra, si ponemos por ejemplo condition = var.tag_imagen dentro de cuota_cpu, fallará.   
-
-
-```
-variable "cuota_cpu" {
-  description = "Cuota de CPU para el contenedor"
-  type = number
-  nullable = false
-  
-  validation {
-    condition = var.cuota_cpu > 0 #Expresión lógica a evaluar
-    error_message = "El valor de cuota cpu no puede ser inferior o igual a 0"
-  }
-
-  validation {
-    condition = var.cuota_cpu <=2048  #Expresión lógica a evaluar
-    error_message = "El valor de cuota cpu no puede superar los 2048"
-  }
-
-} 
-
-#Alternativamente:  
-
-variable "cuota_cpu" {
-  description = "Cuota de CPU para el contenedor"
-  type = number
-  nullable = false
-  
-  validation {
-    condition = var.cuota_cpu > 0 && var.cuota_cpu <=2048 #Expresión lógica a evaluar
-    error_message = "El valor de cuota cpu no puede ser inferior o igual a 0 ni superior a 2048"
-  }
-}
-
-```
-
-
-
 
 ---
 EJERCICIOS:
@@ -463,291 +363,31 @@ resource "docker_container" "contenedor" {
 variables.tf
 
 variable "repo_imagen"{
-  description = "Nombre del repositorio de la imagen"
-  type = string
-  nullable = false
 }
 
 variable "tag_imagen"{
-  description = "Nombre del tag de la imagen"
-  type = string
-  nullable = false
 }
 ```
 
-
 ```
-Ejercicio. Definir el valor de los puertos externo e interno. ¿Cómo podemos meter el valor?
-
-puerto_http = [ 80 , 8080]  #Usaremos una lista porque un set no es iterable
-
-main.tf 
-
-ports {
-  external = var.puerto_http[0]
-  internal = var.puerto_http[1]
-}
+#Ejercicio: Almacenar los valores de los puertos y referenciarlos por posición
+Debemos usar una lista porque un set no permite acceder a los elementos por su posición
 
 
 variables.tf
 
 variable "puerto_http" {
-  description = "Puertos a exponer para el contenedor"
+  description = "Puertos a exponer"
   type = list(number)
-}
-
-
-entorno.tfvars
-
-puerto_http = [ 5443, 443 ]
-
-#No es una buena solución porque no es explícito cuál es el valor del puerto externo e interno para otra persona que pueda tener que rellenar esta infromación
-```
-
-```
-Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (Tampoco buena)
-
-main.tf 
-
-ports {
-  external = var.puerto_http.interno
-  internal = var.puerto_http.externo
-}
-
-
-variables.tf
-
-variable "puerto_http" {
-  description = "Puertos a exponer para el contenedor"
-  type = map(number)
-}
-
-
-entorno.tfvars
-
-puerto_http = {
-                  "interno" = 80
-                  "externo" =  8080
-}
-
-#Esta opción es mejor pero no tan buena, recurriendo a un par clave-valor en el que definamos cual es cual. Es más explícita y dará lugar a menos errores, pero no tengo control sobre las claves que se usarán, puesto que sólo se definen en el apartado de .tfvars, podrían poner esto y funcionaría igual (?? revisar esto, porque en el variables.tf se especifica el nombre de la clave...):
-
-puerto_http = {
-                  "federico" = 80
-                  "externo" =  8080
-}
-
-```
-
-
-```
-Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (mejor, pero aún no es la idónea)
-
-main.tf 
-
-ports  {
-      internal = var.puerto_http.interno
-      external = var.puerto_http.externo
-}
-
-Ejercicio. Definir el valor de los puertos externo e interno: OTRA SOLUCIÓN (Tampoco buena)
-Trabajar con un tipo object  
-
-variables.tf
-variable "puerto_http" {
-  description = "Puertos a exponer para el contenedor"
-  type = object({
-      interno = number
-      externo = number
-  })
-}
-
----
-
-#Aquí si tenemos control de los datos, del nombre de las claves, pero, ¿y si ahora queremos abrir más puertos? Deberemos crear una lista de objetos
-```
-
-```
-Ejercicio. Definir el valor de los puertos externo e interno: SOLUCIÓN IDÓNEA --> lista de objetos
-
-variables.tf
-variable "puertos_a_exponer" {
-  description = "Puertos a exponer para el contenedor"
-  type = list(object({
-      interno = number
-      externo = number
-  }))
-}
-
-
-entorno.tfvars
-
-puertos_a_exponer = [
-                    { 
-                     "interno" = 80
-                     "externo" = 8080
-                    },
-                    {
-                     "interno" = 80
-                     "externo" = 8080
-                    }
-                    ]
-                    
-#Tenemos así una lista que tiene dentro dos objetos, cada uno con su valor para el puerto interno y externo 
-
-#Para implementar esto debemos hacer uso de un bucle. Eso en terraform se implementa con un bloque dinámico, dynamic. Este bloque dinámico tiene un contenido. Y ese bloque dinámico queremos uno para cada objeto que tenga dentro de la lista "puertos_a_exponer"
-
-
-dynamic "ports" {
-        for_each = var.puertos_a_exponer
-        iterator = puerto #nombre de variable que podemos usar para referirme a cada uno de los objetos que tenga dentro de la lista *
-        content {
-                  internal = puerto.value["interno"] #*
-                  external = puerto.value["externo"] #*
-                }
-}
-
-#Para cada elemento que tenga dentro de la lista "puertos_a_exponer", quiero generar un puerto
-
-```
-
-
-```
-Ejercicio. Definir el valor de las variables de entorno
-#Se trata de una lista o, más concretamente, un set de strings  
-
-
-main.tf 
-
-env = var.variables_entorno
-
-
-
-variables.tf 
-
-variable "variables_entorno" {
-    description = "Variables de entorno del contenedor"
-    type = set(string)
-    nullable = false
-}
-
-
-
-entorno.tfvars
-
-variables_de_entorno = [
-                        "VAR1=valor1",
-                        "VAR2=valor2"
-                        ]
-                        
-                        
-#De nuevo, esta sintais no es explícita, cómo sabe quien lo tiene que rellenar que no puede poner "valor1=VAR1" o "var1,valor1"
-
-``` 
-
-```
-Ejercicio. Definir el valor de las variables de entorno: BUENA SOLUCIÓN
-#Realizar un map de strings
-
-
-main.tf 
-
-env = var.variables_entorno
-
-
-variable "variables_entorno" {
-    description = "Variables de entorno del contenedor"
-    type = map(string)
-    nullable = false
-}
-
-
-entorno.tfvars
-
-variables_de_entorno = {
-                        "VAR1" = "valor1",
-                        "VAR2" = "valor2"
-                        }
-#Pero aquí no estamos dejando claro si va primero la clave o el valor, es una solución mejor, pero mala de todas formas  
-
-``` 
-
-```
-Ejercicio. Definir el valor de las variables de entorno: BUENA SOLUCIÓN
-#Realizar un map de strings
-
-
-main.tf 
-
-env = var.variables_entorno
-
-
-variable "variables_entorno" {
-    description = "Variables de entorno del contenedor"
-    type = set(object({
-                      clave = string
-                      valor = string
-                      }))
-    nullable = false
-}
-
-
-entorno.tfvars
-
-variables_de_entorno = {
-                        "clave" = "VAR1",
-                        "valor" = "valor1"
-                        }  
-                        
-                        
-#De esta forma le pedimos una lista donde para cada objeto que queremos que introduzca, tenga que aportar la clave y el valor. Aquí no hay dudas ni ambiguedades
-```
-
-Problema: env espera un set de strings (set(string)), pero tenemos un set de objetos (set(object)). 
-Podemos usar los bucles en línea. 
-
-
-```
-
-main.tf 
-
-env = [ for variable in var.variables_entorno: "${variable.clave}=${variable.valor}" ]
-
-#Iteramos en cada elemento de ese set, convirtiendo el resultado en una lista nueva.
-Para cada uno de los elementos que tengo en la lista de las variables de entorno voy a generar este valor "${variable.clave}=...", con todos esos valores compongo otra lista que es la que enchufo a env
-
-```
-
-
-```
-Ejercicio: Añadir validación para los puertos.  
-
-
-variable "puertos_a_exponer" {
-  description = "Puertos a exponer para el contenedor"
-  type = list(object({
-      interno = number
-      externo = number
-  }))
   nullable = false
-  
-  validation {
-    condition = alltrue(
-                          [ for puerto in var.puertos_a_exponer: puerto.interno < 6500 ] #list(bool)
-                          
-                       ) 
-    #La validación estaría bien cuando todos estos booleanos sean true, recurrimos a una función built-in de terraform
-    error_message = "El puerto interno debe ser menor a 6500"
-  }
-  validation {
-    condition = alltrue(
-                          [ for puerto in var.puertos_a_exponer: puerto.externo < 6500 ] #list(bool)
-                          
-                       ) 
-    #La validación estaría bien cuando todos estos booleanos sean true, recurrimos a una función built-in de terraform
-    error_message = "El puerto externo debe ser menor a 6500"
-  }
 }
 
 
+entorno.tfvars
+
+puertos = [ 443
+
+Esta solución es mala porque NO es explicito
+
+Una forma sencilla de resolver esto 
 ```
